@@ -34,11 +34,8 @@ function getEmitter() {
     }
 
     function apply(namespace) {
-        const objects = events.get(namespace);
-        if (!objects) {
-            return;
-        }
-        objects.forEach(object => {
+        const listeners = events.get(namespace) || [];
+        listeners.forEach(object => {
             if (object.executeFunc()) {
                 object.handler.call(object.context);
             }
@@ -98,14 +95,12 @@ function getEmitter() {
             }
             const parts = event.split('.');
             const namespaces = [];
-            parts.forEach((value, index) => {
-                namespaces.push(index === 0
-                    ? value
-                    : `${namespaces[index - 1]}.${value}`);
+            parts.forEach((part, index) => {
+                namespaces.push(index === 0 ? part : `${namespaces[index - 1]}.${part}`);
             });
-            namespaces.reverse();
-
-            namespaces.forEach(value => apply(value));
+            namespaces
+                .reverse()
+                .forEach(part => apply(part));
 
             return this;
         },
